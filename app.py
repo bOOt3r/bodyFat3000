@@ -11,7 +11,7 @@ st.title("⚖️ AI Body Fat Analyzer 3000")
 st.write('Enter your private details below to estimate body fat using "AI".')
 
 # 1. Sidebar for Sex and Age
-sex = st.radio("Select Sex (Yes please is not an option..)", ["M", "F"])
+sex = st.radio('Select Sex, "Yes please" is not an option..', ["M", "F"])
 age = st.number_input("Age", min_value=15, max_value=150, value=40)
 
 # 2. Main Inputs (Metric)
