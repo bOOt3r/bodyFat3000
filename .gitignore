@@ -1,7 +1,9 @@
 # Default ignored files
 /shelf/
 /workspace.xml
-.idea
+/.idea
 /venv
 /data
 /front_end
+
+main.py
