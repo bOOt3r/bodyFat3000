@@ -6,7 +6,7 @@ import os
 # Paths to your models
 MODELS_DIR = 'models'
 
-st.set_page_config(page_title="AI Body Fat Analyzer", page_icon="⚖️")
+st.set_page_config(page_title="AI Body Fat Analyzer 3000", page_icon="⚖️")
 st.title("⚖️ AI Body Fat Analyzer 3000")
 st.write('Enter your private details below to estimate body fat using "AI".')
 
