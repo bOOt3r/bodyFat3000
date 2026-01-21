@@ -40,6 +40,7 @@ if st.button("Calculate Body Fat %"):
     else:
         model_name = 'bf_female_full.pkl' if is_full else 'bf_female_light.pkl'
 
+    # Load and Predict
     model = joblib.load(os.path.join(MODELS_DIR, model_name))
 
     if is_full:
@@ -49,7 +50,34 @@ if st.button("Calculate Body Fat %"):
         data = pd.DataFrame([[age, weight_kg, height_m, abdomen_cm]],
                             columns=['Age', 'Weight', 'Height', 'Abdomen'])
 
-    result = model.predict(data)[0]
+    # The AI Result
+    body_fat_perc = model.predict(data)[0]
 
-    st.success(f"Estimated Body Fat: {result:.1f}%")
-    st.info(f"Model used: {model_name.upper()}")
+    # --- NEW: BMI and FFMI Logic starts here ---
+
+    # 1. Standard BMI
+    bmi = weight_kg / (height_m ** 2)
+
+    # 2. Lean Mass and FFMI (The "Corrected" BMI)
+    lean_mass = weight_kg * (1 - (body_fat_perc / 100))
+    ffmi = lean_mass / (height_m ** 2)
+
+    # Display the Results
+    st.divider()
+    st.header(f"Your Result: {body_fat_perc:.1f}% Body Fat")
+
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.metric("Standard BMI", f"{bmi:.1f}")
+    with col_b:
+        st.metric("Muscle Index (FFMI)", f"{ffmi:.1f}")
+
+    # Interpret the Results
+    if bmi > 25 and body_fat_perc < 15:
+        st.success("Your BMI is high, but your body fat is low. You likely have high muscle mass!")
+    elif bmi < 25 and body_fat_perc > 25 and sex == 'M':
+        st.warning("You have a normal BMI but high body fat. This is sometimes called 'Skinny Fat'.")
+    elif body_fat_perc > 30:
+        st.error("Body fat levels are a tad on the high side.")
+    else:
+        st.info("Your metrics appear to be in a healthy range.")
