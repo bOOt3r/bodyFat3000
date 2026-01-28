@@ -2,8 +2,9 @@ import streamlit as st
 import joblib
 import pandas as pd
 import os
+from datetime import datetime
+import io
 
-# Paths to your models
 MODELS_DIR = 'models'
 
 st.set_page_config(page_title="AI Body Fat Analyzer 3000", page_icon="⚖️")
@@ -53,12 +54,10 @@ if st.button("Calculate Body Fat %"):
     # The AI Result
     body_fat_perc = model.predict(data)[0]
 
-    # --- NEW: BMI and FFMI Logic starts here ---
-
-    # 1. Standard BMI
+    # Standard BMI Result
     bmi = weight_kg / (height_m ** 2)
 
-    # 2. Lean Mass and FFMI (The "Corrected" BMI)
+    # Lean Mass and FFMI Result
     lean_mass = weight_kg * (1 - (body_fat_perc / 100))
     ffmi = lean_mass / (height_m ** 2)
 
@@ -66,6 +65,7 @@ if st.button("Calculate Body Fat %"):
     st.divider()
     st.header(f"Your Result: {body_fat_perc:.1f}% Body Fat")
 
+    # Display Standard BMI and Muscle Index (FFMI) side by side
     col_a, col_b = st.columns(2)
     with col_a:
         st.metric("Standard BMI", f"{bmi:.1f}")
@@ -81,3 +81,36 @@ if st.button("Calculate Body Fat %"):
         st.error("Body fat levels are a tad on the high side.")
     else:
         st.info("Your metrics appear to be in a healthy range.")
+
+    # Provide Interpretation Guidance
+    st.info("**How to Read the Results:**\n"
+            "- **Body Fat %**: Indicates the percentage of your body weight that is fat. "
+            "Lower values are generally better for health, but extremely low values can be harmful.\n"
+            "- **BMI**: A general indicator of weight relative to height. "
+            "Values between 18.5 and 24.9 are considered normal.\n"
+            "- **FFMI**: A measure of muscle mass. Values above 20 for men and 18 for women are considered muscular.")
+
+    # Generate the current date and time
+    now = datetime.now()
+    date_str = now.strftime("%d/%m/%y")
+    time_str = now.strftime("%H:%M:%S")
+
+    # Create the CSV content
+    csv_content = f"Body\nDate,Time,Weight,BMI,Fat\n{date_str},{time_str},{weight_kg:.2f},{bmi:.2f},{body_fat_perc:.2f}"
+
+    # Create a BytesIO object for the CSV
+    csv_bytes = io.BytesIO(csv_content.encode('utf-8'))
+
+    # Add a download button for the CSV
+    st.download_button(
+        label="Download Results as CSV",
+        data=csv_bytes,
+        file_name="body_fat_results.csv",
+        mime="text/csv"
+    )
+
+    # Garmin Connect Link
+    st.markdown(
+        "[Import to Garmin Connect](https://connect.garmin.com/modern/import-data)",
+        unsafe_allow_html=True
+    )
